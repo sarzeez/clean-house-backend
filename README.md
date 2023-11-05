@@ -31,6 +31,18 @@ $ yarn install
 ## Running the app
 
 ```bash
-# development
+# run db
 $ make start
+
+# start dev
+$ yarn start
+
+# start watch
+$ yarn start:dev
+
+# start debug
+$ yarn start:debug
+
+# start prod
+$ yarn start:prod
 ```
