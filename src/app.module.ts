@@ -9,6 +9,7 @@ import { dataSourceOptions } from '@db/data-source';
 
 // modules
 import { FileModule } from './features/file/module/file.module';
+import { UserModule } from './features/user/module/user.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { FileModule } from './features/file/module/file.module';
       ...dataSourceOptions,
     }),
     FileModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService],
