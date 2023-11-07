@@ -39,9 +39,6 @@ export class UserController {
       throw new NotFoundException();
     }
 
-    const profile = await user.profile;
-    console.log({ profile });
-
     const serialized = plainToInstance(User, user);
     return serialized;
   }
