@@ -4,11 +4,15 @@ import { User } from '../entity/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { unixTime } from '@/utils/date';
+import { UserProfileDto } from '../dto/profile.dto';
+import { Profile } from '../entity/profile.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private userRepository: Repository<User>,
+    @InjectRepository(Profile)
+    private userProfileRepository: Repository<Profile>,
   ) {}
 
   getUsers(): Promise<Array<User>> {
@@ -16,7 +20,9 @@ export class UserService {
   }
 
   getUser(id: number): Promise<User> {
-    return this.userRepository.findOne({ where: { isDeleted: false, id } });
+    return this.userRepository.findOne({
+      where: { isDeleted: false, id },
+    });
   }
 
   getUserByEmail(email: string): Promise<User> {
@@ -27,7 +33,7 @@ export class UserService {
     const user = this.userRepository.create({
       ...createUserDto,
       passwordHash: createUserDto.password,
-      createdAt: unixTime,
+      createdAt: unixTime(),
     });
     return this.userRepository.save(user);
   }
@@ -35,7 +41,7 @@ export class UserService {
   updateUser(id: number, updateUserDto: UpdateUserDto) {
     return this.userRepository.update(id, {
       ...updateUserDto,
-      updatedAt: unixTime,
+      updatedAt: unixTime(),
     });
   }
 
@@ -43,5 +49,29 @@ export class UserService {
     return this.userRepository.update(id, {
       isDeleted: true,
     });
+  }
+
+  async createUserProfile(
+    userId: number,
+    createUserProfileDto: UserProfileDto,
+  ) {
+    const user = await this.userRepository.findOneBy({ id: userId });
+
+    const newProfile = this.userProfileRepository.create(createUserProfileDto);
+    const savedProfile = await this.userProfileRepository.save(newProfile);
+
+    user.profile = savedProfile;
+    return this.userRepository.save({ ...user, updatedAt: unixTime() });
+  }
+
+  async updateUserProfile(
+    userId: number,
+    profileId: number,
+    updateProfileDto: UserProfileDto,
+  ) {
+    await this.userRepository.update(userId, {
+      updatedAt: unixTime(),
+    });
+    return this.userProfileRepository.update(profileId, updateProfileDto);
   }
 }
