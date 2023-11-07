@@ -1,5 +1,12 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Exclude } from 'class-transformer';
+import { Profile } from './profile.entity';
 
 export enum Role {
   ROLE_USER = 'role_user',
@@ -31,6 +38,10 @@ export class User {
     default: Role.ROLE_USER,
   })
   role: Role;
+
+  @OneToOne(() => Profile, (profile) => profile.user)
+  @JoinColumn({ name: 'profile_id' })
+  profile: Profile;
 
   @Exclude()
   @Column({ name: 'is_deleted', default: false })

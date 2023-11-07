@@ -17,6 +17,7 @@ import { UserService } from '../service/user.service';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { encryptPassword } from '@/utils/bcrypt';
 import { User } from '../entity/user.entity';
+import { UserProfileDto } from '../dto/profile.dto';
 
 @Controller('users')
 export class UserController {
@@ -52,7 +53,6 @@ export class UserController {
     }
 
     const hashedPassword = encryptPassword(password);
-
     await this.userService.createUser({
       ...createUserDto,
       password: hashedPassword,
@@ -82,5 +82,40 @@ export class UserController {
     }
 
     await this.userService.deleteUser(id);
+  }
+
+  // profile
+  @Post(':id/profile')
+  async createUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: UserProfileDto,
+  ) {
+    const user = await this.userService.getUser(id);
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    const userProfile = await this.userService.getUserProfile(id);
+
+    if (userProfile.profile) {
+      throw new BadRequestException();
+    }
+
+    this.userService.createUserProfile(id, data);
+  }
+
+  @Put(':id/profile')
+  async updateUserProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() data: UserProfileDto,
+  ) {
+    const userProfile = await this.userService.getUserProfile(id);
+
+    if (!userProfile.profile) {
+      throw new BadRequestException();
+    }
+
+    //
   }
 }
