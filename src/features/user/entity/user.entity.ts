@@ -39,7 +39,7 @@ export class User {
   })
   role: Role;
 
-  @OneToOne(() => Profile, (profile) => profile.user)
+  @OneToOne(() => Profile, (profile) => profile.user, { eager: true })
   @JoinColumn({ name: 'profile_id' })
   profile: Profile;
 

@@ -20,7 +20,9 @@ export class UserService {
   }
 
   getUser(id: number): Promise<User> {
-    return this.userRepository.findOne({ where: { isDeleted: false, id } });
+    return this.userRepository.findOne({
+      where: { isDeleted: false, id },
+    });
   }
 
   getUserByEmail(email: string): Promise<User> {
@@ -31,7 +33,7 @@ export class UserService {
     const user = this.userRepository.create({
       ...createUserDto,
       passwordHash: createUserDto.password,
-      createdAt: unixTime,
+      createdAt: unixTime(),
     });
     return this.userRepository.save(user);
   }
@@ -39,20 +41,13 @@ export class UserService {
   updateUser(id: number, updateUserDto: UpdateUserDto) {
     return this.userRepository.update(id, {
       ...updateUserDto,
-      updatedAt: unixTime,
+      updatedAt: unixTime(),
     });
   }
 
   deleteUser(id: number) {
     return this.userRepository.update(id, {
       isDeleted: true,
-    });
-  }
-
-  getUserProfile(userId: number): Promise<User> {
-    return this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['profile'],
     });
   }
 
@@ -66,10 +61,17 @@ export class UserService {
     const savedProfile = await this.userProfileRepository.save(newProfile);
 
     user.profile = savedProfile;
-    return this.userRepository.save(user);
+    return this.userRepository.save({ ...user, updatedAt: unixTime() });
   }
 
-  updateUserProfile(profileId: number, updateProfileDto: UserProfileDto) {
+  async updateUserProfile(
+    userId: number,
+    profileId: number,
+    updateProfileDto: UserProfileDto,
+  ) {
+    await this.userRepository.update(userId, {
+      updatedAt: unixTime(),
+    });
     return this.userProfileRepository.update(profileId, updateProfileDto);
   }
 }

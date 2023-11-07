@@ -39,6 +39,9 @@ export class UserController {
       throw new NotFoundException();
     }
 
+    const profile = await user.profile;
+    console.log({ profile });
+
     const serialized = plainToInstance(User, user);
     return serialized;
   }
@@ -84,38 +87,22 @@ export class UserController {
     await this.userService.deleteUser(id);
   }
 
-  // profile
-  @Post(':id/profile')
-  async createUserProfile(
+  @Put(':id/profile')
+  async updateUserProfile(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UserProfileDto,
   ) {
     const user = await this.userService.getUser(id);
 
     if (!user) {
-      throw new NotFoundException();
-    }
-
-    const userProfile = await this.userService.getUserProfile(id);
-
-    if (userProfile.profile) {
       throw new BadRequestException();
     }
 
-    this.userService.createUserProfile(id, data);
-  }
-
-  @Put(':id/profile')
-  async updateUserProfile(
-    @Param('id', ParseIntPipe) id: number,
-    @Body() data: UserProfileDto,
-  ) {
-    const userProfile = await this.userService.getUserProfile(id);
-
-    if (!userProfile.profile) {
-      throw new BadRequestException();
+    if (user.profile) {
+      await this.userService.updateUserProfile(user.id, user.profile.id, data);
+      return;
     }
 
-    //
+    await this.userService.createUserProfile(id, data);
   }
 }
