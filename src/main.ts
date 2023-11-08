@@ -1,8 +1,11 @@
-import { NestFactory } from '@nestjs/core';
+import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
+import { JwtAuthGuard } from './features/auth/guard/jwt-auth.guard';
+import { RolesGuard } from './features/auth/guard/roles.guard';
+import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -28,6 +31,15 @@ async function bootstrap() {
 
   // static files
   app.useStaticAssets(join(__dirname, '..', 'public'));
+
+  // global auth
+  const reflector = app.get(Reflector);
+  app.useGlobalGuards(new JwtAuthGuard(reflector));
+
+  // roles guard
+  app.useGlobalGuards(new RolesGuard(reflector));
+
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
   const PORT = 3000;
   await app.listen(process.env.PORT || PORT);
