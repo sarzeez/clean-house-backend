@@ -10,19 +10,33 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Request,
   UseInterceptors,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { UserService } from '../service/user.service';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { encryptPassword } from '@/utils/bcrypt';
-import { User } from '../entity/user.entity';
+import { Role, User } from '../entity/user.entity';
 import { UserProfileDto } from '../dto/profile.dto';
+import { JwtPayload } from '../type/user.type';
+import { Roles } from '@/features/auth/decorator/role.decorator';
+import { Public } from '@/features/auth/decorator/public.decorator';
 
 @Controller('users')
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @Get('me')
+  @UseInterceptors(ClassSerializerInterceptor)
+  async getMe(@Request() req) {
+    const bodyUser: JwtPayload = req.user;
+    const user = await this.userService.getUserByEmail(bodyUser.email);
+    const serialized = plainToInstance(User, user);
+    return serialized;
+  }
+
+  @Roles([Role.ROLE_ADMIN])
   @Get()
   @UseInterceptors(ClassSerializerInterceptor)
   async getUsers() {
@@ -31,6 +45,7 @@ export class UserController {
     return serialized;
   }
 
+  @Roles([Role.ROLE_ADMIN])
   @Get(':id')
   async getUser(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.getUser(id);
@@ -43,6 +58,7 @@ export class UserController {
     return serialized;
   }
 
+  @Public()
   @Post()
   async createUser(@Body() createUserDto: UserDto) {
     const { email, password } = createUserDto;
@@ -73,6 +89,7 @@ export class UserController {
     this.userService.updateUser(id, data);
   }
 
+  @Roles([Role.ROLE_ADMIN])
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.getUser(id);
