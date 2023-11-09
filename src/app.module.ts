@@ -8,6 +8,7 @@ import { dataSourceOptions } from '@db/data-source';
 import { FileModule } from './features/file/module/file.module';
 import { UserModule } from './features/user/module/user.module';
 import { AuthModule } from './features/auth/module/auth.module';
+import { EmployModule } from './features/employ/module/employ.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AuthModule } from './features/auth/module/auth.module';
     FileModule,
     UserModule,
     AuthModule,
+    EmployModule,
   ],
   controllers: [],
   providers: [],
