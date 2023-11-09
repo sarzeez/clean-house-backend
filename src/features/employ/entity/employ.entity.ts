@@ -1,5 +1,6 @@
+import { Note } from '@/features/note/entity/note.entity';
 import { Exclude } from 'class-transformer';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum Category {
   CATEGORY_CLEANING = 'cleaning',
@@ -33,6 +34,9 @@ export class Employ {
 
   @Column({ name: 'created_by' })
   createdBy: number;
+
+  @OneToMany(() => Note, (note) => note.employ)
+  notes: Note[];
 
   @Exclude()
   @Column({ name: 'is_deleted', default: false })

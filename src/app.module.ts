@@ -9,6 +9,7 @@ import { FileModule } from './features/file/module/file.module';
 import { UserModule } from './features/user/module/user.module';
 import { AuthModule } from './features/auth/module/auth.module';
 import { EmployModule } from './features/employ/module/employ.module';
+import { NoteModule } from './features/note/module/note.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { EmployModule } from './features/employ/module/employ.module';
     UserModule,
     AuthModule,
     EmployModule,
+    NoteModule,
   ],
   controllers: [],
   providers: [],
