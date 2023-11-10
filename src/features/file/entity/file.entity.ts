@@ -16,8 +16,13 @@ export class File {
   @Column()
   path: string;
 
+  @Column({ name: 'original_name' })
+  originalName: string;
+
+  @Column({ name: 'mime_type' })
+  mimeType: string;
+
   @OneToOne(() => Profile, (profile) => profile.avatar)
-  @JoinColumn({ name: 'profile_id' })
   profile: Profile;
 
   @Exclude()

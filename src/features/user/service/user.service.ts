@@ -4,8 +4,9 @@ import { User } from '../entity/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { unixTime } from '@/utils/date';
-import { UserProfileDto } from '../dto/profile.dto';
 import { Profile } from '../entity/profile.entity';
+import { File } from '@/features/file/entity/file.entity';
+import { ProfileType } from '../type/user.type';
 
 @Injectable()
 export class UserService {
@@ -13,6 +14,8 @@ export class UserService {
     @InjectRepository(User) private userRepository: Repository<User>,
     @InjectRepository(Profile)
     private userProfileRepository: Repository<Profile>,
+    @InjectRepository(File)
+    private fileRepository: Repository<File>,
   ) {}
 
   getUsers(): Promise<Array<User>> {
@@ -51,13 +54,14 @@ export class UserService {
     });
   }
 
-  async createUserProfile(
-    userId: number,
-    createUserProfileDto: UserProfileDto,
-  ) {
+  async createUserProfile(userId: number, createUserProfileDto: ProfileType) {
     const user = await this.userRepository.findOneBy({ id: userId });
 
     const newProfile = this.userProfileRepository.create(createUserProfileDto);
+    if (createUserProfileDto.avatar) {
+      const newFile = this.fileRepository.create(createUserProfileDto.avatar);
+      newProfile.avatar = newFile;
+    }
     const savedProfile = await this.userProfileRepository.save(newProfile);
 
     user.profile = savedProfile;
@@ -67,11 +71,16 @@ export class UserService {
   async updateUserProfile(
     userId: number,
     profileId: number,
-    updateProfileDto: UserProfileDto,
+    updateProfileDto: ProfileType,
   ) {
     await this.userRepository.update(userId, {
       updatedAt: unixTime(),
     });
+    if (updateProfileDto.avatar) {
+      const fileId = updateProfileDto.avatar.id;
+      const fileDto = updateProfileDto.avatar;
+      await this.fileRepository.update(fileId, fileDto);
+    }
     return this.userProfileRepository.update(profileId, updateProfileDto);
   }
 }
