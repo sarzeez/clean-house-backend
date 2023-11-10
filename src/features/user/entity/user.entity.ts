@@ -59,8 +59,4 @@ export class User {
   @Exclude()
   @Column({ name: 'updated_at', nullable: true })
   updatedAt: number;
-
-  constructor(partial: Partial<User>) {
-    Object.assign(this, partial);
-  }
 }
