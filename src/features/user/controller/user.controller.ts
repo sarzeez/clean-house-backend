@@ -116,7 +116,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './public/uploads',
+        destination: './public',
         filename: (req, file, callback) => {
           const splittedFileName = file.originalname.split('.');
           const fileExtension = splittedFileName[splittedFileName.length - 1];
