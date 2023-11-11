@@ -29,7 +29,7 @@ export class Profile {
   @Column({ default: null })
   age: number;
 
-  @OneToOne(() => File, (file) => file.profile, { eager: true })
+  @OneToOne(() => File, (file) => file.profile, { eager: true, nullable: true })
   @JoinColumn({ name: 'file_id' })
   avatar: File;
 

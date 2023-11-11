@@ -4,28 +4,39 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Delete,
+  FileTypeValidator,
   Get,
+  MaxFileSizeValidator,
   NotFoundException,
   Param,
+  ParseFilePipe,
   ParseIntPipe,
   Post,
   Put,
   Request,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
+import { diskStorage } from 'multer';
 import { UserService } from '../service/user.service';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { encryptPassword } from '@/utils/bcrypt';
 import { Role, User } from '../entity/user.entity';
 import { UserProfileDto } from '../dto/profile.dto';
-import { JwtPayload } from '../type/user.type';
+import { JwtPayload, ProfileType } from '../type/user.type';
 import { Roles } from '@/features/auth/decorator/role.decorator';
 import { Public } from '@/features/auth/decorator/public.decorator';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileService } from '@/features/file/service/file.service';
+import { File } from '@/features/file/entity/file.entity';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private fileService: FileService,
+  ) {}
 
   @Get('me')
   @UseInterceptors(ClassSerializerInterceptor)
@@ -102,15 +113,50 @@ export class UserController {
   }
 
   @Put(':id/profile')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './public',
+        filename: (req, file, callback) => {
+          const splittedFileName = file.originalname.split('.');
+          const fileExtension = splittedFileName[splittedFileName.length - 1];
+          callback(null, `${Date.now()}.${fileExtension}`);
+        },
+      }),
+    }),
+  )
   async updateUserProfile(
     @Param('id', ParseIntPipe) id: number,
-    @Body() data: UserProfileDto,
+    @Body() body: UserProfileDto,
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({
+            maxSize: 1024 * 1024 * 3,
+            message: () =>
+              `Validation failed (expected size is less than 3 MB)`,
+          }),
+          new FileTypeValidator({ fileType: '.(png|jpeg|jpg)' }),
+        ],
+        fileIsRequired: false,
+      }),
+    )
+    file: Express.Multer.File,
   ) {
     const user = await this.userService.getUser(id);
-
     if (!user) {
       throw new BadRequestException();
     }
+
+    let newFile: File;
+    if (file) {
+      newFile = await this.fileService.createFile({
+        path: file.path,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+      });
+    }
+    const data: ProfileType = { ...body, avatar: newFile };
 
     if (user.profile) {
       await this.userService.updateUserProfile(user.id, user.profile.id, data);

@@ -10,6 +10,9 @@ import { useContainer } from 'class-validator';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // static files
+  app.useStaticAssets(join(__dirname, '..', 'public'));
+
   // cors config
   app.enableCors({
     origin: '*',
@@ -26,11 +29,10 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       forbidUnknownValues: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
     }),
   );
-
-  // static files
-  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   // global auth
   const reflector = app.get(Reflector);
