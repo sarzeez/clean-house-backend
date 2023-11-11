@@ -1,7 +1,8 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { AppModule } from './app.module';
 import { JwtAuthGuard } from './features/auth/guard/jwt-auth.guard';
 import { RolesGuard } from './features/auth/guard/roles.guard';
 import { useContainer } from 'class-validator';
@@ -36,6 +37,22 @@ async function bootstrap() {
 
   // roles guard
   app.useGlobalGuards(new RolesGuard(reflector));
+
+  const config = new DocumentBuilder()
+    .setTitle('Clean House API Doc')
+    .setDescription('The API description')
+    .setVersion('1.0')
+    .addTag('clean-house')
+    .addBearerAuth({
+      type: 'http',
+      scheme: 'bearer',
+      bearerFormat: 'JWT',
+      name: 'JWT',
+      description: 'Enter JWT token',
+    })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, document);
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
 
