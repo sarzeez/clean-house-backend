@@ -28,8 +28,8 @@ import { JwtPayload, ProfileType } from '../type/user.type';
 import { Roles } from '@/features/auth/decorator/role.decorator';
 import { Public } from '@/features/auth/decorator/public.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { FileService } from '@/features/file/service/file.service';
 import { File } from '@/features/file/entity/file.entity';
+import { FileService } from '@/features/file/service/file.service';
 
 @Controller('users')
 export class UserController {
@@ -116,7 +116,7 @@ export class UserController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './public',
+        destination: './public/uploads',
         filename: (req, file, callback) => {
           const splittedFileName = file.originalname.split('.');
           const fileExtension = splittedFileName[splittedFileName.length - 1];
@@ -151,7 +151,7 @@ export class UserController {
     let newFile: File;
     if (file) {
       newFile = await this.fileService.createFile({
-        path: file.path,
+        path: `uploads/${file.filename}`,
         originalName: file.originalname,
         mimeType: file.mimetype,
       });
@@ -162,7 +162,6 @@ export class UserController {
       await this.userService.updateUserProfile(user.id, user.profile.id, data);
       return;
     }
-
     await this.userService.createUserProfile(id, data);
   }
 }

@@ -1,7 +1,6 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
-import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
 import { JwtAuthGuard } from './features/auth/guard/jwt-auth.guard';
 import { RolesGuard } from './features/auth/guard/roles.guard';
@@ -9,9 +8,6 @@ import { useContainer } from 'class-validator';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-  // static files
-  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   // cors config
   app.enableCors({
