@@ -19,6 +19,8 @@ import {
 } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { diskStorage } from 'multer';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+
 import { UserService } from '../service/user.service';
 import { UpdateUserDto, UserDto } from '../dto/user.dto';
 import { encryptPassword } from '@/utils/bcrypt';
@@ -32,6 +34,7 @@ import { File } from '@/features/file/entity/file.entity';
 import { FileService } from '@/features/file/service/file.service';
 
 @Controller('users')
+@ApiTags('User')
 export class UserController {
   constructor(
     private userService: UserService,
@@ -39,6 +42,7 @@ export class UserController {
   ) {}
 
   @Get('me')
+  @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
   async getMe(@Request() req) {
     const bodyUser: JwtPayload = req.user;
@@ -49,6 +53,7 @@ export class UserController {
 
   @Roles([Role.ROLE_ADMIN])
   @Get()
+  @ApiBearerAuth()
   @UseInterceptors(ClassSerializerInterceptor)
   async getUsers() {
     const users = await this.userService.getUsers();
@@ -58,6 +63,7 @@ export class UserController {
 
   @Roles([Role.ROLE_ADMIN])
   @Get(':id')
+  @ApiBearerAuth()
   async getUser(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.getUser(id);
 
@@ -87,6 +93,7 @@ export class UserController {
   }
 
   @Put(':id')
+  @ApiBearerAuth()
   async updateUser(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: UpdateUserDto,
@@ -101,6 +108,7 @@ export class UserController {
   }
 
   @Roles([Role.ROLE_ADMIN])
+  @ApiBearerAuth()
   @Delete(':id')
   async deleteUser(@Param('id', ParseIntPipe) id: number) {
     const user = await this.userService.getUser(id);
@@ -113,6 +121,7 @@ export class UserController {
   }
 
   @Put(':id/profile')
+  @ApiBearerAuth()
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({

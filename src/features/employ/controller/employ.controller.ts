@@ -11,6 +11,7 @@ import {
   Put,
   Request,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { EmployService } from '../service/employ.service';
 import { Public } from '@/features/auth/decorator/public.decorator';
 import { EmployDto } from '../dto/employ.dto';
@@ -21,6 +22,7 @@ import { Role } from '@/features/user/entity/user.entity';
 import { Roles } from '@/features/auth/decorator/role.decorator';
 
 @Controller('employes')
+@ApiTags('Employ')
 export class EmployController {
   constructor(private employService: EmployService) {}
 
@@ -34,6 +36,7 @@ export class EmployController {
 
   @Roles([Role.ROLE_ADMIN])
   @Get(':id')
+  @ApiBearerAuth()
   async getEmploy(@Param('id', ParseIntPipe) id: number) {
     const employe = await this.employService.getEmploy(id);
     if (!employe) {
@@ -45,6 +48,7 @@ export class EmployController {
 
   @Roles([Role.ROLE_ADMIN])
   @Post()
+  @ApiBearerAuth()
   async createEmploy(@Request() req, @Body() data: EmployDto) {
     const user: JwtPayload = req.user;
     const newEmploy = await this.employService.createEmploy({
@@ -57,6 +61,7 @@ export class EmployController {
 
   @Roles([Role.ROLE_ADMIN])
   @Put(':id')
+  @ApiBearerAuth()
   async updateEmploy(
     @Param('id', ParseIntPipe) id: number,
     @Body() data: EmployDto,
@@ -72,6 +77,7 @@ export class EmployController {
 
   @Roles([Role.ROLE_ADMIN])
   @Delete(':id')
+  @ApiBearerAuth()
   async deleteEmploy(@Param('id', ParseIntPipe) id: number) {
     const employ = await this.employService.getEmploy(id);
 
