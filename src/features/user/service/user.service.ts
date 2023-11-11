@@ -60,7 +60,7 @@ export class UserService {
     const newProfile = this.userProfileRepository.create(createUserProfileDto);
     if (createUserProfileDto.avatar) {
       const newFile = this.fileRepository.create(createUserProfileDto.avatar);
-      newProfile.avatar = newFile;
+      newProfile.avatar = { ...newFile, createdAt: unixTime() };
     }
     const savedProfile = await this.userProfileRepository.save(newProfile);
 
@@ -77,6 +77,7 @@ export class UserService {
       updatedAt: unixTime(),
     });
     if (updateProfileDto.avatar) {
+      console.log({ avatar: updateProfileDto.avatar });
       const fileId = updateProfileDto.avatar.id;
       const fileDto = updateProfileDto.avatar;
       await this.fileRepository.update(fileId, fileDto);
